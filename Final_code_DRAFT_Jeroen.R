@@ -102,37 +102,31 @@ train.selection <- function(percentage, data, random.seed = TRUE, seed = as.nume
   return (train)
 }
 
-# @ TODO: THIS DOES NOT WORK YET.
 #' error.rate.prediction.trees
 #' Predict the error rate of a tree.
 #' @param tree.data: the tree that has been build.
 #' @param dataset: dataset that has been used in the creation of the tree.
-#' @param y: response that has been used in the formula of the tree.data.
 #' @param test.set: a list of indexes indicating the postions of the test dataset.
 #' @param type.prediction: what kind of prediction has to be made in the predict().
 #'
 #' @return error rate of the prediction compared to the test set.
-error.rate.prediction.trees <- function(tree.data, dataset, y ,test.set, type.prediction = "class"){
+error.rate.prediction.trees <- function(tree.data, dataset, test.set, type.prediction = "class"){
   # Make a prediction using the tree data on the test data set.
   prediction.tree <- predict(tree.data, newdata = dataset[test.set,], type = type.prediction)
   
   # Get the y data out of the dataset, create a list. Otherwise you get errors in the return statement.
-  test.data <- dataset$tissue
-  
-  print(type.prediction)
-  
-  
-  prediction.tree <- predict(tree.data, newdata = dataset[test.set,], type = type.prediction)
-  
-#   yhat.tree <-
-#     predict(tree.expr.clus, newdata = expr4T.filtered[-train.expr4T.data,], type = "class")
-#   newdata.test <- expr4T.filtered[-train.expr4T.data,]$tissue
-#   error.tree.clus <- 1 - mean(yhat.tree == newdata.test)
+  test.data <- expr4T.filtered[test.set,]$tissue
   
   # Error test of the prediction against the test set.
   return( 1 - mean(prediction.tree == test.data) )
-  
 }
+
+yhat.tree <-
+  predict(tree.expr.clus, newdata = expr4T.filtered[-train.expr4T.data,], type = "class")
+newdata.test <- expr4T.filtered[-train.expr4T.data,]$tissue
+error.tree.clus <- 1 - mean(yhat.tree == newdata.test)
+error.tree.clus
+
 
 #' Cols
 #' Creates a range of colors that can be used for plotting.
@@ -832,48 +826,34 @@ tree.expr.clus <-
     subset = train.expr4T.data
   )
 
-
-
-# @ TODO: Check why the function gives different results than the code below.
-yhat.tree <-
-  predict(tree.expr.clus, newdata = expr4T.filtered[-train.expr4T.data,], type = "class")
-newdata.test <- expr4T.filtered[-train.expr4T.data,]$tissue
-error.tree.clus <- 1 - mean(yhat.tree == newdata.test)
-
-# Gives errors
-# error.rate.prediction.trees(tree.data = tree.expr.clus, dataset = expr4T.filtered, y = "tissue", test.set = -train.expr4T.data)
-
 # @ TODO: Replace this repetative code as a function.
 # Perform cross-validation and pruning on the tree
 cv.tissue <- cv.tree(tree.expr.clus, FUN = prune.misclass)
 best.set <- min.set.selection(cv.tissue)
 
-prune.expr <- prune.misclass(tree.expr.clus, best = best.set)
-tree.pred <-
-  predict(prune.expr, expr4T.filtered[-train.expr4T.data,], type = "class")
-error.prune.tree.clust <-
-  1 - mean(tree.pred == expr4T.filtered[-train.expr4T.data,]$tissue) #Test error rate
+prune.expr.clus <- prune.misclass(tree.expr.clus, best = best.set)
+
 
 
 tree.all.genes <- tree(tissue ~ .,
                        data = expr4T.filtered,
                        subset = train.expr4T.data)
-yhat.tree <-
-  predict(tree.all.genes, newdata = expr4T.filtered[-train.expr4T.data,], type = "class")
-newdata.test <- expr4T.filtered[-train.expr4T.data,]$tissue
-error.tree <- 1 - mean(yhat.tree == newdata.test)
+
+
 
 cv.tissue <- cv.tree(tree.all.genes, FUN = prune.misclass)
 best.set <- min.set.selection(cv.tissue)
 
-prune.expr <- prune.misclass(tree.all.genes, best = best.set)
-tree.pred <-
-  predict(prune.expr, expr4T.filtered[-train.expr4T.data,], type = "class")
-error.prune.tree <-
-  1 - mean(tree.pred == expr4T.filtered[-train.expr4T.data,]$tissue) #Test error rate
+prune.expr.all.genes <- prune.misclass(tree.all.genes, best = best.set)
 
+# Error rate unpruned tree of the clustering data.
+error.rate.prediction.trees(tree.data = tree.expr.clus, dataset = expr4T.filtered, test.set = -train.expr4T.data)
 
-error.tree
-error.tree.clus
-error.prune.tree
-error.prune.tree.clust
+# Error rate pruned tree of the clustering data.
+error.rate.prediction.trees(tree.data = prune.expr.clus, dataset = expr4T.filtered, test.set = -train.expr4T.data)
+
+# Error rate of unpruned all gene data.
+error.rate.prediction.trees(tree.data = tree.all.genes, dataset = expr4T.filtered, test.set = -train.expr4T.data)
+
+# Error rate of pruned all gene data.
+error.rate.prediction.trees(tree.data = prune.expr.all.genes, dataset = expr4T.filtered, test.set = -train.expr4T.data)
