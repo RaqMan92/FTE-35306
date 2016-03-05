@@ -24,6 +24,12 @@ library(MASS)
 # Used for the plotting of the PCA.
 library(plotrix)
 
+# Library used for performing a randdomForest.
+library(randomForest)
+
+# Library is used for the creation of trees.
+library(tree)
+
 
 ####################
 #### Functions #####
