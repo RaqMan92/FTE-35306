@@ -128,7 +128,6 @@ error.rate.prediction.trees <- function(tree.data, dataset, test.set, type.predi
   return( 1 - mean(prediction.tree == test.data) )
 }
 
-<<<<<<< HEAD
 ##Is this a function??
 yhat.tree <-
   predict(tree.expr.clus, newdata = expr4T.filtered[-train.expr4T.data,], type = "class")
@@ -137,8 +136,6 @@ error.tree.clus <- 1 - mean(yhat.tree == newdata.test)
 error.tree.clus
 
 
-=======
->>>>>>> origin/master
 #' Cols
 #' Creates a range of colors that can be used for plotting.
 #' @param vec: is a vector that will be given colors ID's.
@@ -166,7 +163,7 @@ min.set.selection <- function(cvset){ #rename
 #' @param data: data as a data.frame.
 #'
 #' @return mydata: two tissue dataset as a data.frame
-tissue.selection <- function(tissue1, tissue2, data = data.frame(expr4T)){
+tissue.selection <- function(tissue1, tissue2, data = data.frame(expr4T.filtered)){
   mydata <- data[which(data$tissue == tissue1|data$tissue == tissue2),]
   mydata <- droplevels(mydata)
   print(dim(mydata))
@@ -184,7 +181,7 @@ tissue.selection <- function(tissue1, tissue2, data = data.frame(expr4T)){
 # Load in the dataset.
 # expr4T <- read.table("M:/Pattern Recognition/Project/expr4T.dat", sep="")
 expr4T <- read.table("F:/Dropbox/Pattern Recognition/Week 1/Friday/expr4T.dat", sep="")
-
+###
 dim(expr4T) #Checking dimentions
 
 ####REDUCTION OF THE DATA SET####
@@ -248,7 +245,7 @@ plot(lm.fit.1)
 # Check if there is evidence of non-linearity for ENSG00000271043.1_MTRNR2L2 fpr two tissue data
 plot(lm.fit.1.two.tissues)
 
-#### Approach for avoiding patterns in linearity plot(NOT SUCCESS) #####
+#### Approach for avoiding patterns in linearity plot(NOT SUCCESS) Remove? It is useless so maybe we can just omit it. ##### 
 reduced <- c(names(lm.fit.1$fitted.values[which(lm.fit.1$fitted.values>500)]))
 a<- expr4T.filtered[reduced,]
 
@@ -260,7 +257,7 @@ plot(lm.fit.reduced)
 
 rm(reduced, a, lm.fit.reduced)
 
-# Checking predictions
+#### Checking predictions ####
 
 PredictivePerformanceLm(
   y = "ENSG00000271043.1_MTRNR2L2",
@@ -588,6 +585,10 @@ plot(
 # There is quite a difference between the scale and the non-scale, the first PC
 # in the non-scale explains 81.18%. While the scale only explains 27.68%.
 
+
+
+
+
 # b. How are the different tissues placed in the space defined by
 # these PCs? Comment on how this relates to observations when you classified
 # these tissues compared to each other (week 1,2).
@@ -667,13 +668,10 @@ pr.out.scale$rotation[which(abs(pr.out.scale$rotation[,1]) > 0.2),]
 # different or very similar results?
 
 
-# Use all the data for clustering, besides the tissue data.
+# Check if the kmeans is going well.
 clustering.data <- expr4T.filtered[-152]
+ncenters <- 13
 
-# Set the number of centers equal to the number of unique tissues.
-ncenters <- length(unique(expr4T.filtered$tissue))
-
-# Perform a kmeans clustering on the dataset, use different settings to see the effect of them.
 km.out.scale.13 <-
   kmeans(scale(clustering.data), centers = ncenters)
 km.out.13 <- kmeans(clustering.data, centers = ncenters)
@@ -697,18 +695,17 @@ table(km.out.13.pca$cluster)
 table(km.out.nstart.50.pca$cluster)
 # They also give very different results for each cluster.
 
-# Perform hierarchical clustering, using three methods on the pca data.
 hc.complete.pca <- hclust(dist(pr.out$x[,1:2]), method = "complete")
 hc.average.pca <- hclust(dist(pr.out$x[,1:2]), method = "average")
 hc.single.pca <- hclust(dist(pr.out$x[,1:2]), method = "single")
 
 
-# Perform hierarchical clustering, using three methods on the clustering data.
+# Do a hierarchical clustering on the data
 hc.complete <- hclust(dist(clustering.data), method = "complete")
 hc.average <- hclust(dist(clustering.data), method = "average")
 hc.single <- hclust(dist(clustering.data), method = "single")
 
-# See the groups present within the dendrogram.
+
 cutree(hc.complete , ncenters)
 cutree(hc.average , ncenters)
 cutree(hc.single , ncenters)
@@ -724,19 +721,12 @@ cutree(hc.single , ncenters)
 # class labels and clustering labels are the same.
 
 
-# K-means generate class labels, each of these class labels corrosponds to a entry in the tissues.
-# So unique(expr4T.filtered$tissue)[1] corrosponds to k-means class label 1.
 tissues.clustering.assigned <-
   unique(expr4T.filtered$tissue)[as.vector(km.out.13$cluster)]
 
-# Put them into a data.frame, the tissues.clustering.assigned as a new column.
 dat <- data.frame(expr4T.filtered, K = tissues.clustering.assigned)
-
-# See the results of the K-means compared to the real tissues.
 table(dat$K)
 table(dat$tissue)
-
-# Plot to see how much difference there is between the real tissues and the assigned k-means class labels.
 plot(
   as.vector(table(dat$tissue)) - as.vector(table(dat$K)),
   main = "Differences between the class labels",
