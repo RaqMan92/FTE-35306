@@ -34,32 +34,23 @@ library(tree)
 ####################
 #### Functions #####
 
-
-# @ TODO: Create a function here.
-# mydat <- tissue.selection("brain_amygdala", "brain_hippocampus")
-# 
-# tissues <- mydat$tissue
-# table(mydat$tissue)
-# new.data <- data.frame(tissues,mydat[,1:10])
-# glm.fit <- glm(tissues~.,
-#                data = new.data,
-#                family = "binomial",
-#                subset = train.mydat
-# )
-# 
-# summary(glm.fit)
-# 
-# test.set <- mydat[- train.mydat,]
-# 
-# Write this as a function:
-#
-# glm.probs <-  predict(glm.fit, test.set, type = "response")
-# glm.pred <- rep("brain_amygdala", 108) #number from the test set
-# glm.pred[glm.probs>0.5] = "brain_hippocampus"
-# table(glm.pred, test.set$tissue)
-# 1 - mean(glm.pred == test.set$tissue)
-# 
-
+#' GlmPredictionErrorRate
+#' Perform a prediction on the test data and calculate the error rate of that prediction.
+#' @param glm.fit: Fitted generalized linear model that has been trained by a trainings set. 
+#' @param tissue.1: First tissue you want to use for prediction. 
+#' @param tissue.2: Second tissue you want to use for prediction. 
+#' @param test.data: A test dataset, that doesn't contain any trainings data. 
+#' @param type.prediction: Type of prediction that is beinf performed by the predict(). Default on response. 
+#'
+#' @return Table of predictions and the error rate of the predictions against the test data.
+GlmPredictionErrorRate <-
+  function(glm.fit, tissue.1, tissue.2, test.data, type.prediction = "response") {
+    glm.probs <-  predict(glm.fit, test.data, type = type.prediction)
+    glm.pred <- rep(tissue.1, nrow(test.data))
+    glm.pred[glm.probs>0.5] <- tissue.2
+    print(table(glm.pred, test.data$tissue))
+    return(1 - mean(glm.pred == test.data$tissue))
+  }
 
 ### PredictivePerformanceLm ###
 #' Check how well the predictive performance is of the linear model.
@@ -186,7 +177,9 @@ tissue.selection <- function(tissue1, tissue2, data = data.frame(expr4T)){
 #### Pre-processing ####  
 
 # Load in the dataset.
-expr4T <- read.table("M:/Pattern Recognition/Project/expr4T.dat", sep="")
+# expr4T <- read.table("M:/Pattern Recognition/Project/expr4T.dat", sep="")
+expr4T <- read.table("F:/Dropbox/Pattern Recognition/Week 1/Friday/expr4T.dat", sep="")
+
 
 dim(expr4T) #Checking dimentions
 
@@ -228,6 +221,7 @@ mydat <- droplevels(mydat)
 
 #LINEAR REGReSSION MODELS
 
+set.seed(1)
 ####Training set selection####
 train.expr4T.data <-
   sample(1:nrow(expr4T.filtered), round(nrow(expr4T.filtered) * 0.35))
