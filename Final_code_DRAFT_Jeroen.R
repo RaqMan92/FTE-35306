@@ -3,11 +3,18 @@
 # Student numbers:
 #########################################
 
+
 #############
 # Packages #
 #############
 
 # install.packages("car")
+# 
+# install.packages("class")
+# 
+# install.packages("leaps")
+# 
+# install.packages("MASS")
 
 #############
 # Libraries #
@@ -33,7 +40,7 @@ library(tree)
 
 ####################
 #### Functions #####
-
+####################
 #' GlmPredictionErrorRate
 #' Perform a prediction on the test data and calculate the error rate of that prediction.
 #' @param glm.fit: Fitted generalized linear model that has been trained by a trainings set. 
@@ -121,6 +128,7 @@ error.rate.prediction.trees <- function(tree.data, dataset, test.set, type.predi
   return( 1 - mean(prediction.tree == test.data) )
 }
 
+##Is this a function??
 yhat.tree <-
   predict(tree.expr.clus, newdata = expr4T.filtered[-train.expr4T.data,], type = "class")
 newdata.test <- expr4T.filtered[-train.expr4T.data,]$tissue
@@ -174,7 +182,6 @@ tissue.selection <- function(tissue1, tissue2, data = data.frame(expr4T)){
 # expr4T <- read.table("M:/Pattern Recognition/Project/expr4T.dat", sep="")
 expr4T <- read.table("F:/Dropbox/Pattern Recognition/Week 1/Friday/expr4T.dat", sep="")
 
-
 dim(expr4T) #Checking dimentions
 
 ####REDUCTION OF THE DATA SET####
@@ -207,11 +214,8 @@ rm(m, minm, minsm, nn, s, sm)
 
 tissue1 <- "brain_putamen"
 tissue2 <- "brain_cortex"
-dat <- data.frame(expr4T.filtered)
-mydat <-
-  expr4T.filtered[which(expr4T.filtered$tissue == tissue1 |
-                          expr4T.filtered$tissue == tissue2),]
-mydat <- droplevels(mydat)
+
+mydat <- tissue.selection(tissue1, tissue2, data = expr4T.filtered)
 
 #LINEAR REGReSSION MODELS
 
